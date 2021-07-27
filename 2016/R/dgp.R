@@ -202,26 +202,6 @@ dgp_2016_true <- function(x, parameters, random.seed, constants = constants_2016
 }
 
 
-dgp_2016_training <- function(truth, n, random.seed) {
-  random.seed <- list(seed = random.seed, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rounding")
-  suppressWarnings(do.call("set.seed", random.seed))
-  
-  selected_sample = sample(1:nrow(truth$x),n, replace = FALSE)
-  mu.0 = truth$mu.0[selected_sample]
-  mu.1 = truth$mu.1[selected_sample]
-  x = truth$x[selected_sample]
-  sigma_y = truth$sigma
-  
-  n1=round(n/2)
-  n0=n-n1
-  zind=sample(1:n,size=n1)
-  z=numeric(n)
-  z[zind]=1
-  mu = z * mu.1 + (1-z) * mu.0
-  y <- mu + sigma_y*rnorm(n)
-  result <- list(x = x, z = z, y =y)
-  result
-}
 
 isValidSim <- function(parameters, data, result) {
   treatedRows <- result$z == "trt"
