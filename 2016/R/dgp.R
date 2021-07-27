@@ -1,4 +1,4 @@
-dgp_2016 <- function(x, parameters, random.seed, constants = constants_2016(), extraInfo = FALSE)
+dgp_2016_true <- function(x, parameters, random.seed, constants = constants_2016())
 {
   C <- constants
   C$RUN_BUGGED <- ""
@@ -196,22 +196,30 @@ dgp_2016 <- function(x, parameters, random.seed, constants = constants_2016(), e
     environment(gaf.rsp@weights[[i]])$scale <- oldWeight
   }
   
-  y.0 <- rnorm(nrow(x), mu.0, C$RSP_SIGMA_Y)
-  y.1 <- rnorm(nrow(x), mu.1, C$RSP_SIGMA_Y)
+  result <- list(mu.0 = mu.0, mu.1 = mu.1, x = x, sigma = C$RSP_SIGMA_Y)
   
-  y <- ifelse(z == "trt", y.1, y.0)
+  result
+}
+
+
+dgp_2016_training <- function(truth, n, random.seed) {
+  random.seed <- list(seed = random.seed, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rounding")
+  suppressWarnings(do.call("set.seed", random.seed))
   
-  result <- list(z = z, y = y, y.0 = y.0, y.1 = y.1, mu.0 = mu.0, mu.1 = mu.1, e = p.score)
-  if (extraInfo) {
-    result$f.z <- gaf.trt
-    result$f.y <- gaf.rsp
-    result$x <- x
-    result$x$.z <- NULL
-    result$valid <- isValidSim(parameters, x.orig, result)
-  } else {
-    result$z <- as.integer(result$z) - 1L
-  }
+  selected_sample = sample(1:nrow(truth$x),n, replace = FALSE)
+  mu.0 = truth$mu.0[selected_sample]
+  mu.1 = truth$mu.1[selected_sample]
+  x = truth$x[selected_sample]
+  sigma_y = truth$sigma
   
+  n1=round(n/2)
+  n0=n-n1
+  zind=sample(1:n,size=n1)
+  z=numeric(n)
+  z[zind]=1
+  mu = z * mu.1 + (1-z) * mu.0
+  y <- mu + sigma_y*rnorm(n)
+  result <- list(x = x, z = z, y =y)
   result
 }
 
