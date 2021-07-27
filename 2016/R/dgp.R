@@ -19,41 +19,22 @@ dgp_2016 <- function(x, parameters, random.seed, constants = constants_2016(), e
     if (length(random.seed) == 1L) {
       ## random.seed is an iteration number
       
-      if (random.seed < 1L || random.seed > nrow(randomSeeds[[runCaseNumber]]))
-        stop("random.seed for parameters_2016 must be in [1, ", nrow(randomSeeds[[runCaseNumber]]), "]")
-      
-      runCaseIter  <- random.seed
-      C$RUN_BUGGED <- strsplit(as.character(randomSeeds[[runCaseNumber]][runCaseIter, "run.bugged"]), ":")[[1L]]
-      random.seed  <- randomSeeds[[runCaseNumber]][runCaseIter, "random.seed"]
+      if (random.seed < 1L)
+        stop("random.seed for parameters_2016 must be positive integer")
+      C$RUN_BUGGED <- c("none")
     }
   }
   ## in case parameters is a row of a data.frame, convert it into an ordinary named list
   parameters <- as.list(parameters)
   evalx(parameters[sapply(parameters, is.factor)], x <- sapply(x, as.character))
   
-  if (is.integer(random.seed) && length(random.seed) > 1L) {
-    ## random.seed is .Random.seed the object
-    .GlobalEnv$.Random.seed <- random.seed
-  } else {
-    if (is.numeric(random.seed)) random.seed <- list(seed = random.seed, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rounding")
+  random.seed <- list(seed = random.seed, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rounding")
     
-    if (!is.list(random.seed))
-      stop("random.seed must be a .Random.seed integer vector, an integer scalar, or a list containing the arguments to set.seed")
-    
-    if (any(names(random.seed) == "seed")) {
-      seedPosition <- which.max(names(random.seed) == "seed")
-    } else if (any(names(random.seed == ""))) {
-      seedPosition <- which.max(names(random.seed) == "")
-    } else {
-      stop("random.seed does not conform to formals of set.seed")
-    }
-    
-    ## seed manipulation in original
-    random.seed[[seedPosition]] <- random.seed[[seedPosition]] * 5L + if (random.seed[[seedPosition]] <= 500L) 565L else 7565L
-    
-    if (getRversion() < "3.6.0") random.seed$sample.kind <- NULL
-    suppressWarnings(do.call("set.seed", random.seed))
-  }
+  if (!is.list(random.seed))
+    stop("random.seed must be a .Random.seed integer vector, an integer scalar, or a list containing the arguments to set.seed")
+  
+  if (getRversion() < "3.6.0") random.seed$sample.kind <- NULL
+  suppressWarnings(do.call("set.seed", random.seed))
   
   if (any(c("model.trt", "root.trt", "overlap.trt", "model.rsp", "alignment", "te.hetero") %not_in% names(parameters)))
     stop("parameters must be named list with members 'model.trt', 'root.trt', 'overlap.trt', 'model.rsp', 'alignment', and 'te.hetero'")
