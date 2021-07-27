@@ -196,7 +196,7 @@ dgp_2016 <- function(x, parameters, random.seed, constants = constants_2016())
     environment(gaf.rsp@weights[[i]])$scale <- oldWeight
   }
   
-  result <- list(mu.0 = mu.0, mu.1 = mu.1, x = x, sigma = C$RSP_SIGMA_Y)
+  result <- list(mu.0 = mu.0, mu.1 = mu.1, x = x.orig, sigma = C$RSP_SIGMA_Y)
   
   result
 }
