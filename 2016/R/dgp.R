@@ -1,4 +1,4 @@
-dgp_2016_true <- function(x, parameters, random.seed, constants = constants_2016())
+dgp_2016 <- function(x, parameters, random.seed, constants = constants_2016())
 {
   C <- constants
   C$RUN_BUGGED <- ""
